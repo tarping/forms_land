@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claudia Arenas · Comunidad — signal test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1016;--panel:#161922;--panel-2:#1B1F2B;--line:#272C39;--line-soft:#1F2430;
+    --text:#E9EAEF;--muted:#878D9C;--muted-2:#5C6373;--ambient:#6BA3C5;
+    --candidate:#E8A33D;--error:#C5564E;--ok:#62B884;--paper:#F6F4EF;--radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1100px 600px at 85% -10%,#1a2030 0%,rgba(26,32,48,0) 55%),var(--ink);
+    color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:22px clamp(16px,3vw,34px) 60px}
+  .topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 18px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+  .eyebrow{font-family:Archivo,sans-serif;font-weight:700;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .topbar .sep{width:1px;height:18px;background:var(--line)}
+  .status{display:flex;align-items:center;gap:9px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);animation:beat 2.4s infinite}
+  @keyframes beat{0%{box-shadow:0 0 0 0 rgba(98,184,132,.45)}70%{box-shadow:0 0 0 7px rgba(98,184,132,0)}100%{box-shadow:0 0 0 0 rgba(98,184,132,0)}}
+  .origin-chip{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text);background:#10131b;border:1px solid var(--line);padding:4px 9px;border-radius:6px}
+  .topbar .grow{flex:1}
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}
+  @media (max-width:920px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+  .card-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-soft);background:var(--panel-2)}
+  .card-head h2{margin:0;font-family:Archivo,sans-serif;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .card-head .tag{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted-2)}
+  .stage-body{padding:30px 26px 26px}
+  .stage-body .kicker{font-family:Archivo,sans-serif;font-weight:700;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--candidate);margin:0 0 14px}
+  .stage-body h1{font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);line-height:1.05;margin:0 0 12px;letter-spacing:-.01em}
+  .stage-body p.lede{color:var(--muted);font-size:15px;max-width:42ch;margin:0 0 22px}
+  .form-stage{position:relative;background:var(--paper);border-radius:8px;padding:6px;border:1px solid #0a0c11}
+  .form-stage iframe{display:block;width:100%;height:500px;border:0;border-radius:5px;background:#fff}
+  .form-fallback{display:none;padding:22px;text-align:center;color:#5c6373;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.7}
+  .monitor-body{padding:16px}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .btn{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;letter-spacing:.03em;color:var(--text);background:#10131b;border:1px solid var(--line);padding:7px 11px;border-radius:7px;cursor:pointer;transition:border-color .15s,background .15s}
+  .btn:hover{border-color:#3a4252;background:#141823}
+  .btn:focus-visible{outline:2px solid var(--candidate);outline-offset:2px}
+  .btn.primary{background:#22283a;border-color:#37425c}
+  .toggle{display:flex;align-items:center;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;padding:7px 4px}
+  .toggle input{accent-color:var(--candidate);width:14px;height:14px}
+  .lane-label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;display:flex;justify-content:space-between}
+  .lane{position:relative;height:92px;background:linear-gradient(180deg,#0c0f16,#0a0d13);border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;display:flex;align-items:flex-end;gap:3px;padding:8px}
+  .lane::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:repeating-linear-gradient(90deg,#1d2330 0 6px,transparent 6px 12px)}
+  .blip{width:6px;min-width:6px;border-radius:2px 2px 0 0;background:var(--ambient);opacity:.75;transition:height .25s ease}
+  .blip.candidate{background:var(--candidate);opacity:1;box-shadow:0 0 10px rgba(232,163,61,.55)}
+  .blip.error{background:var(--error);opacity:.85}
+  .blip.fresh{animation:rise .35s ease}
+  @keyframes rise{from{transform:scaleY(.2);opacity:.2}to{transform:scaleY(1);opacity:1}}
+  .lane-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+  .log-head{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 6px}
+  .log-head .lane-label{margin:0}
+  .log{font-family:"IBM Plex Mono",monospace;font-size:12px;border:1px solid var(--line-soft);border-radius:8px;background:#0b0e14;max-height:280px;overflow:auto}
+  .row{display:grid;grid-template-columns:62px 78px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid #12161f}
+  .row:last-child{border-bottom:0}
+  .row.candidate{background:rgba(232,163,61,.07)}
+  .row .t{color:var(--muted-2)}
+  .row .chip{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:5px;text-align:center;white-space:nowrap}
+  .chip.ambient{color:var(--ambient);background:rgba(107,163,197,.12)}
+  .chip.candidate{color:var(--candidate);background:rgba(232,163,61,.14)}
+  .chip.error{color:var(--error);background:rgba(197,86,78,.14)}
+  .row .payload{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .row .payload .om{color:var(--muted-2)}
+  .row .payload .ox{color:var(--error)}
+  .pin{font-family:Archivo,sans-serif;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:5px;padding:4px 7px;cursor:pointer}
+  .pin:hover{border-color:var(--candidate);color:var(--candidate)}
+  .log-empty{padding:22px;text-align:center;color:var(--muted-2);font-family:"IBM Plex Mono",monospace;font-size:12px}
+  .pixels{display:flex;gap:10px;margin-top:14px}
+  .lamp{flex:1;border:1px solid var(--line-soft);border-radius:8px;background:#0b0e14;padding:12px;display:flex;align-items:center;gap:10px}
+  .lamp .led{width:11px;height:11px;border-radius:50%;background:#2b3140;transition:background .1s,box-shadow .1s}
+  .lamp.fire .led{background:var(--candidate);box-shadow:0 0 12px var(--candidate)}
+  .lamp .name{font-family:Archivo,sans-serif;font-size:12px;font-weight:600}
+  .lamp .count{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+  .gen{margin-top:16px;border:1px solid var(--line-soft);border-radius:8px;background:#0b0e14;overflow:hidden}
+  .gen .ghead{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #12161f}
+  .gen .ghead span{font-family:Archivo,sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .gen .copy{margin-left:auto}
+  .gen pre{margin:0;padding:14px;overflow:auto;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.6;color:#cdd3e0;max-height:300px}
+  .note{margin-top:18px;padding:13px 15px;border:1px solid var(--line-soft);border-left:3px solid var(--candidate);border-radius:8px;background:rgba(232,163,61,.05);color:var(--muted);font-size:13px;line-height:1.6}
+  .note b{color:var(--text);font-weight:600}
+  .note code{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--candidate)}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--candidate);color:#1a1305;font-family:Archivo,sans-serif;font-weight:700;font-size:13px;padding:10px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.dot,.blip.fresh{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="eyebrow">Internal · Conversion signal test</span>
+    <span class="sep"></span>
+    <div class="status"><span class="dot"></span><span id="statusText">Listening for messages…</span></div>
+    <div class="grow"></div>
+    <span class="status">expected origin</span>
+    <span class="origin-chip" id="originChip">https://forms.sonymusicfans.com</span>
+  </div>
+
+  <div class="grid">
+
+    <section class="card">
+      <div class="card-head"><h2>Landing</h2><span class="tag">deployable</span></div>
+      <div class="stage-body">
+        <p class="kicker">Comunidad</p>
+        <h1>Únete a la comunidad de Claudia Arenas</h1>
+        <p class="lede">Entérate antes que nadie de nuevos lanzamientos, conciertos y contenido exclusivo.</p>
+        <div class="form-stage">
+          <iframe
+            id="smfForm"
+            src="https://forms.sonymusicfans.com/campaign/claudia-arenas_sign-up-form_2026/"
+            title="Formulario de registro"
+            loading="lazy"></iframe>
+          <div class="form-fallback" id="formFallback">
+            The form couldn't render in this sandbox.<br>
+            Open the deployed URL (your Vercel link) to test the real form.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Signal monitor</h2><span class="tag" id="msgCount">0 messages</span></div>
+      <div class="monitor-body">
+
+        <div class="controls">
+          <button class="btn" id="clearBtn">Clear log</button>
+          <button class="btn primary" id="simBtn">Simulate submit</button>
+          <label class="toggle"><input type="checkbox" id="strictToggle"> strict origin only</label>
+        </div>
+
+        <p class="lane-label"><span>Signal lane</span><span>newest →</span></p>
+        <div class="lane" id="lane">
+          <div class="lane-empty" id="laneEmpty">waiting for the form to broadcast…</div>
+        </div>
+
+        <div class="log-head">
+          <p class="lane-label"><span>Event log</span></p>
+          <p class="lane-label"><span>click a row to expand · pin the real signal</span></p>
+        </div>
+        <div class="log" id="log">
+          <div class="log-empty" id="logEmpty">No messages yet. Submit a test signup — or hit “Simulate submit”.</div>
+        </div>
+
+        <div class="pixels">
+          <div class="lamp" id="lampMeta"><span class="led"></span><span class="name">Meta · Lead</span><span class="count" id="metaCount">0</span></div>
+          <div class="lamp" id="lampGoogle"><span class="led"></span><span class="name">Google · Conv</span><span class="count" id="googleCount">0</span></div>
+        </div>
+
+        <div class="gen">
+          <div class="ghead"><span>Generated listener</span><button class="btn copy" id="copyBtn">Copy</button></div>
+          <pre id="genCode"><span style="color:#5c6373">// Pin the event that fires on submit to generate the exact condition.</span></pre>
+        </div>
+
+        <div class="note">
+          <b>Reading this:</b> blue blips are ambient noise (mostly auto-resize). A sharp <span style="color:var(--candidate)">amber</span> flare is a likely submit signal — the form collapsing to a confirmation state, or an explicit event. Pin it to lock the listener code. Pixel lamps are <b>stubs</b> (console only); wire real <code>fbq</code>/<code>gtag</code> where marked in the generated code.
+        </div>
+
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast">Pinned — listener generated</div>
+
+<script>
+(function(){
+  "use strict";
+  var EXPECTED_ORIGIN = "https://forms.sonymusicfans.com";
+  var t0 = performance.now();
+  var count = 0, metaFires = 0, googleFires = 0;
+  var heightHistory = [];
+  var pinned = null;
+
+  var laneEl = document.getElementById('lane');
+  var laneEmpty = document.getElementById('laneEmpty');
+  var logEl = document.getElementById('log');
+  var logEmpty = document.getElementById('logEmpty');
+  var statusText = document.getElementById('statusText');
+
+  function ts(){
+    var ms = performance.now() - t0;
+    var s = Math.floor(ms/1000), m = Math.floor(s/60);
+    return (m<10?'0':'')+m+':'+((s%60)<10?'0':'')+(s%60)+'.'+String(Math.floor(ms%1000)).padStart(3,'0');
+  }
+  function extractHeight(d){
+    if(d && typeof d==='object'){
+      if(typeof d.height==='number') return d.height;
+      if(d.data && typeof d.data.height==='number') return d.data.height;
+    }
+    if(typeof d==='string'){
+      var m = d.match(/height["':\s]+(\d{2,5})/i);
+      if(m) return parseInt(m[1],10);
+    }
+    return null;
+  }
+  function classify(origin, data, height){
+    if(origin !== EXPECTED_ORIGIN) return 'error';
+    var blob = (typeof data==='string') ? data : JSON.stringify(data||'');
+    if(/submit|success|complete|confirm|thank|registrad|enviad|conversion|lead/i.test(blob)) return 'candidate';
+    if(height!=null){
+      var max = heightHistory.length ? Math.max.apply(null, heightHistory) : 0;
+      heightHistory.push(height);
+      if(max>0 && height < max*0.6 && max>250) return 'candidate';
+      return 'ambient';
+    }
+    return 'ambient';
+  }
+  function fmtPayload(origin, data){
+    var ok = origin===EXPECTED_ORIGIN;
+    var oTag = '<span class="'+(ok?'om':'ox')+'">['+(ok?'✓':'✗')+' '+origin+']</span> ';
+    var body = (typeof data==='string') ? data : JSON.stringify(data);
+    return oTag + (body||'(empty)');
+  }
+  function firePixels(){
+    // ===== STUBS — replace with your real tags ============================
+    // window.fbq && fbq('track','Lead',{content_name:'claudia_arenas_signup'});
+    // window.gtag && gtag('event','conversion',{send_to:'AW-XXXXXXX/YYYYYYY'});
+    console.log('[STUB] Meta Lead + Google conversion would fire here');
+    // ======================================================================
+    metaFires++; googleFires++;
+    document.getElementById('metaCount').textContent = metaFires;
+    document.getElementById('googleCount').textContent = googleFires;
+    blink('lampMeta'); blink('lampGoogle');
+  }
+  function blink(id){var el=document.getElementById(id);el.classList.add('fire');setTimeout(function(){el.classList.remove('fire')},450);}
+
+  function addBlip(type, height){
+    laneEmpty.style.display='none';
+    var b=document.createElement('div');
+    b.className='blip fresh '+type;
+    var h = height!=null ? Math.max(10, Math.min(72, height/12)) : (type==='candidate'?60:24);
+    b.style.height=h+'px';
+    laneEl.appendChild(b);
+    setTimeout(function(){b.classList.remove('fresh')},400);
+    var blips=laneEl.querySelectorAll('.blip');
+    if(blips.length>40) blips[0].remove();
+  }
+  function addRow(origin, data, type){
+    logEmpty.style.display='none';
+    var row=document.createElement('div');
+    row.className='row '+(type==='candidate'?'candidate':'');
+    row.innerHTML =
+      '<span class="t">'+ts()+'</span>'+
+      '<span class="chip '+type+'">'+type+'</span>'+
+      '<span class="payload">'+fmtPayload(origin,data)+'</span>'+
+      '<button class="pin">Pin</button>';
+    var payloadEl = row.querySelector('.payload');
+    payloadEl.addEventListener('click',function(){
+      payloadEl.style.whiteSpace = payloadEl.style.whiteSpace==='normal'?'nowrap':'normal';
+    });
+    row.querySelector('.pin').addEventListener('click',function(){ pin(origin,data,type); });
+    logEl.insertBefore(row, logEl.firstChild);
+  }
+  function handle(origin, data){
+    var strict = document.getElementById('strictToggle').checked;
+    if(strict && origin!==EXPECTED_ORIGIN) return;
+    var height = extractHeight(data);
+    var type = classify(origin, data, height);
+    count++;
+    document.getElementById('msgCount').textContent = count+' message'+(count===1?'':'s');
+    statusText.textContent = 'Last signal '+ts();
+    addBlip(type, height);
+    addRow(origin, data, type);
+    if(type==='candidate') firePixels();
+  }
+  function pin(origin, data, type){
+    pinned = {origin:origin, data:data, type:type};
+    renderCode();
+    var tt=document.getElementById('toast');tt.classList.add('show');setTimeout(function(){tt.classList.remove('show')},1600);
+  }
+  function escapeRe(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+  function renderCode(){
+    var cond, comment;
+    if(pinned){
+      var d=pinned.data;
+      if(d && typeof d==='object'){
+        var key = ['event','type','eventName','action','message'].find(function(k){return d[k]!=null;});
+        if(key){ cond = "e.data && e.data."+key+" === "+JSON.stringify(d[key]); comment="matched on the pinned event field"; }
+        else { cond = "/* shape: "+JSON.stringify(d).slice(0,60)+" */ true"; comment="object had no obvious event field — inspect & tighten"; }
+      } else if(typeof d==='string'){
+        cond = "typeof e.data === 'string' && /"+escapeRe(d).slice(0,40)+"/.test(e.data)";
+        comment="string payload — adjust the pattern";
+      }
+    }
+    if(!cond){ cond="/* pin a row first */ false"; comment="placeholder"; }
+    var esc=function(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+    var code =
+'// '+(comment||'')+'\n'+
+'window.addEventListener("message", function (e) {\n'+
+'  // security: only trust the form\'s origin\n'+
+'  if (e.origin !== "'+EXPECTED_ORIGIN+'") return;\n\n'+
+'  if ('+cond+') {\n'+
+'    fbq("track", "Lead", { content_name: "claudia_arenas_signup" });\n'+
+'    gtag("event", "conversion", { send_to: "AW-XXXXXXX/YYYYYYY" });\n'+
+'  }\n'+
+'});';
+    document.getElementById('genCode').textContent = code;
+  }
+
+  window.addEventListener('message', function(e){ handle(e.origin, e.data); });
+
+  document.getElementById('clearBtn').addEventListener('click',function(){
+    logEl.innerHTML=''; logEl.appendChild(logEmpty); logEmpty.style.display='block';
+    laneEl.querySelectorAll('.blip').forEach(function(b){b.remove()});
+    laneEmpty.style.display='flex'; count=0; heightHistory=[];
+    document.getElementById('msgCount').textContent='0 messages';
+  });
+  document.getElementById('simBtn').addEventListener('click',function(){
+    handle(EXPECTED_ORIGIN, {event:'form:submitted', formId:'claudia-arenas_sign-up-form_2026'});
+  });
+  document.getElementById('copyBtn').addEventListener('click',function(){
+    var txt=document.getElementById('genCode').textContent;
+    navigator.clipboard && navigator.clipboard.writeText(txt);
+    this.textContent='Copied'; var b=this; setTimeout(function(){b.textContent='Copy'},1200);
+  });
+
+  var fr=document.getElementById('smfForm');
+  setTimeout(function(){
+    try{ if(!fr.contentWindow){ document.getElementById('formFallback').style.display='block'; } }catch(_){}
+  }, 4000);
+
+  renderCode();
+})();
+</script>
+</body>
+</html>
